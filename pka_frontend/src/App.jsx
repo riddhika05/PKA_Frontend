@@ -1,16 +1,23 @@
 import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Chatbot from "./Chatbot";
 import BG_VID from "./assets/BG_VID.mp4";
 import "./App.css";
+import ThreeDCardDemo from "./components/Modal";
+
 function App() {
   return (
     <>
+      {/* Background Video - Fixed fullscreen */}
       <div className="bg-video-wrap">
-        <video autoPlay loop muted playsInline className="bg-video">
+        <video autoPlay loop muted playsInline className="bg-video"  onLoadedData={() => console.log('Video loaded successfully')}
+          onError={(e) => console.log('Video error:', e)}>
           <source src={BG_VID} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
+      </div>
+
+      {/* Content centered on screen */}
+      <div className="relative z-10 flex items-center justify-center min-h-screen">
+        <ThreeDCardDemo />
       </div>
     </>
   );

@@ -1,0 +1,12 @@
+// jsconfig.json
+
+{
+  "compilerOptions": {
+    "baseUrl": "./src", 
+    "paths": {
+      // Define the alias for components, which shadcn/ui and aceternity need
+      "@/components/*": ["components/*"]
+    }
+  },
+  "include": ["src/**/*"] // Tell the compiler which files to include
+}
