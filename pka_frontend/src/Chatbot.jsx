@@ -11,7 +11,8 @@ const Chatbot = () => {
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   const [alertType, setAlertType] = useState("success");
-  const [selectedFiles, setSelectedFiles] = useState([]); 
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedFolders, setSelectedFolders] = useState([]); 
 
   
   useEffect(() => {
@@ -64,6 +65,44 @@ const Chatbot = () => {
         event.target.value = '';
       } else {
         const errorMessage = data.detail || data.message || `HTTP Error ${response.status}: Failed to upload files.`;
+        displayAlert(errorMessage, 'error');
+      }
+    } catch (error) {
+      displayAlert("Network Error: Could not connect to the API. Is the server running?", "error");
+    }
+  };
+
+  const handleAddFolders = () => {
+    const folderInput = document.getElementById('folderInput');
+    folderInput.click();
+  };
+
+  const handleFolderSelect = async (event) => {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+
+    setSelectedFolders(files);
+    
+    try {
+      const formData = new FormData();
+      files.forEach(file => {
+        formData.append('folders', file);
+      });
+
+      const response = await fetch('http://127.0.0.1:8000/upload_folders', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      console.log(data)
+      if (response.ok) {
+        displayAlert(`Successfully uploaded ${files.length} folder(s) to workspace`, 'success');
+        setSelectedFolders([]);
+        // Reset the folder input
+        event.target.value = '';
+      } else {
+        const errorMessage = data.detail || data.message || `HTTP Error ${response.status}: Failed to upload folders.`;
         displayAlert(errorMessage, 'error');
       }
     } catch (error) {
@@ -192,7 +231,7 @@ const Chatbot = () => {
       
       {!showSetupModal && (
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen text-white p-8 bg-black bg-opacity-30">
-          {/* Hidden file input */}
+         
           <input
             id="fileInput"
             type="file"
@@ -201,10 +240,20 @@ const Chatbot = () => {
             className="hidden"
             accept="*/*"
           />
+          <input
+            id="folderInput"
+            type="file"
+            multiple
+            onChange={handleFolderSelect}
+            className="hidden"
+            webkitdirectory=""
+            directory=""
+            mozdirectory=""
+          />
          
           <div className="absolute top-4 right-4 flex gap-2">
             <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleAddFiles}>Add Files to Workspace</button>
-            <button className="bg-green-500 text-white px-4 py-2 rounded">Add Folders to Workspace</button>
+            <button className="bg-green-500 text-white px-4 py-2 rounded" onClick={handleAddFolders}>Add Folders to Workspace</button>
           </div>
          
         
