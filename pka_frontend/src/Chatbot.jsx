@@ -7,6 +7,8 @@ import Delete from "./assets/cat_throwing_file.png";
 import BG_VID from "./assets/BG_VID.mp4";
 import Hungry from "./assets/Hungry.gif";
 import Clean_Chat from "./assets/delete_chat.png";
+import Welcome from "./assets/welcome.gif";
+import Sleeping from "./assets/sleeping_cat.gif"
 // Constant for localStorage key
 const LOCAL_STORAGE_KEY = "mistyChatHistory";
 
@@ -288,7 +290,12 @@ const Chatbot = () => {
   };
 
   // SEND MESSAGE WITH STREAMING
-  const handleSendMessage = async () => {
+  // IN Chatbot.jsx
+
+// ... (other code)
+
+// SEND MESSAGE WITH STREAMING (REVISED)
+const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
     const userMessage = inputMessage.trim();
@@ -297,6 +304,7 @@ const Chatbot = () => {
     setMessages((prev) => [...prev, { type: "user", content: userMessage }]);
     setIsLoading(true);
 
+    // Initial assistant message (to be updated by stream or replaced by direct answer)
     setMessages((prev) => [
       ...prev,
       {
@@ -319,6 +327,35 @@ const Chatbot = () => {
         throw new Error(`HTTP Error ${response.status}`);
       }
 
+      // --- NEW LOGIC: Check for Direct JSON (Non-Streaming) Response ---
+      const contentType = response.headers.get("Content-Type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await response.json();
+        
+        // Ensure the response is a successful answer
+        if (data.status === "success") {
+             setMessages((prev) => {
+                const newMessages = [...prev];
+                const lastIndex = newMessages.length - 1;
+                if (newMessages[lastIndex].type === "assistant") {
+                    newMessages[lastIndex] = {
+                        ...newMessages[lastIndex],
+                        content: data.answer,
+                        sources: data.sources || [],
+                        contextUsed: data.context_used || 0,
+                    };
+                }
+                return newMessages;
+            });
+            // Skip the streaming logic below
+            return; 
+        } else if (data.detail || data.message) {
+             throw new Error(data.detail || data.message);
+        }
+      }
+      // --- END NEW LOGIC ---
+
+      // --- EXISTING STREAMING LOGIC ---
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -328,7 +365,7 @@ const Chatbot = () => {
         const { done, value } = await reader.read();
 
         if (done) break;
-
+        // ... (rest of streaming logic is the same)
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() || "";
@@ -404,7 +441,6 @@ const Chatbot = () => {
       setIsLoading(false);
     }
   };
-
   const handleCreateWorkspace = async () => {
     try {
       const response = await fetch("http://127.0.0.1:8000/setup_workspace", {
@@ -696,10 +732,13 @@ const Chatbot = () => {
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {messages.length === 0 ? (
                   <div className="flex items-center justify-center h-full">
-                    <div className="text-center text-teal-200/80">
+                    <div className="text-center text-teal-200/80 ">
+                     <div className="flex items-center space-x-2">
+                     <img src={Welcome} className="w-10 h-10 rounded-full hover:scale-110"></img>
                       <h3 className="text-3xl font-bold mb-2">
-                        💬 Ask me anything!
+                         Ask me anything!
                       </h3>
+                      </div>
                       <p className="text-lg text-teal-300/60">
                         Want to talk about your files?
                       </p>
@@ -897,7 +936,9 @@ const Chatbot = () => {
 
               {/* Input Area */}
               <div className="p-6 bg-slate-900/85 backdrop-blur-md border-t border-teal-900/30">
+    
                 <div className="flex gap-3 max-w-5xl mx-auto">
+  
                   <input
                     type="text"
                     value={inputMessage}
@@ -910,7 +951,7 @@ const Chatbot = () => {
                   <button
                     onClick={handleSendMessage}
                     disabled={isLoading || !inputMessage.trim()}
-                    className="bg-teal-600 hover:bg-teal-700 disabled:bg-slate-700 text-white px-8 py-4 rounded-lg transition font-semibold text-base shadow-lg"
+                    className="bg-teal-600 hover:bg-teal-700 disabled:bg-slate-700 text-white px-8 py-4 rounded-lg transition font-semibold text-base shadow-lg z-10"
                   >
                     Send
                   </button>
