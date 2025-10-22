@@ -290,12 +290,7 @@ const Chatbot = () => {
   };
 
   // SEND MESSAGE WITH STREAMING
-  // IN Chatbot.jsx
-
-// ... (other code)
-
-// SEND MESSAGE WITH STREAMING (REVISED)
-const handleSendMessage = async () => {
+  const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
 
     const userMessage = inputMessage.trim();
@@ -304,7 +299,6 @@ const handleSendMessage = async () => {
     setMessages((prev) => [...prev, { type: "user", content: userMessage }]);
     setIsLoading(true);
 
-    // Initial assistant message (to be updated by stream or replaced by direct answer)
     setMessages((prev) => [
       ...prev,
       {
@@ -327,35 +321,6 @@ const handleSendMessage = async () => {
         throw new Error(`HTTP Error ${response.status}`);
       }
 
-      // --- NEW LOGIC: Check for Direct JSON (Non-Streaming) Response ---
-      const contentType = response.headers.get("Content-Type");
-      if (contentType && contentType.includes("application/json")) {
-        const data = await response.json();
-        
-        // Ensure the response is a successful answer
-        if (data.status === "success") {
-             setMessages((prev) => {
-                const newMessages = [...prev];
-                const lastIndex = newMessages.length - 1;
-                if (newMessages[lastIndex].type === "assistant") {
-                    newMessages[lastIndex] = {
-                        ...newMessages[lastIndex],
-                        content: data.answer,
-                        sources: data.sources || [],
-                        contextUsed: data.context_used || 0,
-                    };
-                }
-                return newMessages;
-            });
-            // Skip the streaming logic below
-            return; 
-        } else if (data.detail || data.message) {
-             throw new Error(data.detail || data.message);
-        }
-      }
-      // --- END NEW LOGIC ---
-
-      // --- EXISTING STREAMING LOGIC ---
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -365,7 +330,7 @@ const handleSendMessage = async () => {
         const { done, value } = await reader.read();
 
         if (done) break;
-        // ... (rest of streaming logic is the same)
+
         buffer += decoder.decode(value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() || "";
@@ -441,6 +406,7 @@ const handleSendMessage = async () => {
       setIsLoading(false);
     }
   };
+
   const handleCreateWorkspace = async () => {
     try {
       const response = await fetch("http://127.0.0.1:8000/setup_workspace", {
