@@ -16,7 +16,7 @@ export default function ThreeDCardDemo() {
           translateZ="50"
           className="text-xl font-bold text-neutral-600 dark:text-white"
         >
-          Hello I am your Personal Knowledge Assistant !
+          Hello I am Misty - your Personal Knowledge Assistant !
         </CardItem>
         <CardItem
           as="p"
