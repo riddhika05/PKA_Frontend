@@ -638,40 +638,40 @@ const Chatbot = () => {
             <div className="flex gap-12 mb-4">
               <button
                 onClick={handleAddFiles}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg transition font-medium flex items-center gap-2 shadow-lg"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg transition font-small flex items-center gap-2 shadow-lg"
               >
-                <img src={File} className="w-10 h-10"></img> Add Files
+                <img src={File} className="w-10 h-10 transform scale-150 hover:scale-110"></img>Add Files
               </button>
               <button
                 onClick={handleAddFolders}
                 className="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-2 rounded-lg transition font-medium flex items-center gap-2 shadow-lg"
               >
-                <img src={Folder} className="w-10 h-10"></img> Add Folder
+                <img src={Folder} className="w-10 h-10 transform scale-150 hover:scale-110"></img> Add Folder
               </button>
               <button
                 onClick={handleOpenDeleteModal}
                 className="bg-amber-300 hover:bg-amber-700 text-white px-5 py-2 rounded-lg transition font-medium flex items-center gap-2 shadow-lg"
               >
-                <img src={Delete} className="w-10 h-10"></img> Delete Files
+                <img src={Delete} className="w-10 h-10 transform scale-150 hover:scale-110"></img> Delete Files
               </button>
               <button
                 onClick={handleReindexAll}
                 className="bg-purple-700 hover:bg-violet-700 text-white px-5 py-2 rounded-lg transition font-medium flex items-center gap-2 shadow-lg"
               >
-                <img src={Reindex} className="w-10 h-10"></img> Rebuild Index
+                <img src={Reindex} className="w-10 h-10 transform scale-150 hover:scale-110"></img> Rebuild Index
               </button>
               <button
                 onClick={handleCleanWorkspace}
                 className="bg-rose-700 hover:bg-rose-800 text-white px-5 py-2 rounded-lg transition font-medium flex items-center gap-2 shadow-lg"
               >
-                <img src={Clean} className="w-10 h-10"></img> Clean All
+                <img src={Clean} className="w-10 h-10 transform scale-150 hover:scale-110"></img> Clean All
               </button>
               {/* NEW BUTTON: Clear Chat */}
               <button
                 onClick={handleClearChat}
                 className="bg-slate-600 hover:bg-slate-700 text-white px-5 py-2 rounded-lg transition font-medium flex items-center gap-2 shadow-lg"
               >
-                <img src={Clean_Chat} className="w-12 h-13"></img>
+                <img src={Clean_Chat} className="w-12 h-13 transform scale-125 hover:scale-110"></img>
                 Clear Chat
               </button>
             </div>
