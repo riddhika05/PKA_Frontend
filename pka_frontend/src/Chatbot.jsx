@@ -290,37 +290,43 @@ const Chatbot = () => {
   };
 
   // SEND MESSAGE WITH STREAMING
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+  // SEND MESSAGE WITH STREAMING
+const handleSendMessage = async () => {
+  if (!inputMessage.trim() || isLoading) return;
 
-    const userMessage = inputMessage.trim();
-    setInputMessage("");
+  const userMessage = inputMessage.trim();
+  setInputMessage("");
 
-    setMessages((prev) => [...prev, { type: "user", content: userMessage }]);
-    setIsLoading(true);
+  setMessages((prev) => [...prev, { type: "user", content: userMessage }]);
+  setIsLoading(true);
 
-    setMessages((prev) => [
-      ...prev,
-      {
-        type: "assistant",
-        content: "",
-        sources: [],
-        contextUsed: 0,
-      },
-    ]);
+  setMessages((prev) => [
+    ...prev,
+    {
+      type: "assistant",
+      content: "",
+      sources: [],
+      contextUsed: 0,
+    },
+  ]);
 
-    try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/ask?question=${encodeURIComponent(
-          userMessage
-        )}&stream=true`,
-        { method: "POST" }
-      );
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/ask?question=${encodeURIComponent(
+        userMessage
+      )}&stream=true`,
+      { method: "POST" }
+    );
 
-      if (!response.ok) {
-        throw new Error(`HTTP Error ${response.status}`);
-      }
+    if (!response.ok) {
+      throw new Error(`HTTP Error ${response.status}`);
+    }
 
+    // Check if response is actually streaming
+    const contentType = response.headers.get("content-type");
+    
+    if (contentType && contentType.includes("text/event-stream")) {
+      // Handle streaming response
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
@@ -390,23 +396,43 @@ const Chatbot = () => {
           }
         }
       }
-    } catch (error) {
+    } else {
+      // Handle non-streaming JSON response (for file path queries)
+      const data = await response.json();
+      
+      console.log("Non-streaming response:", data);
+      
       setMessages((prev) => {
         const newMessages = [...prev];
-        newMessages.pop();
-        return [
-          ...newMessages,
-          {
-            type: "error",
-            content: `Network Error: ${error.message}`,
-          },
-        ];
+        const lastIndex = newMessages.length - 1;
+        if (newMessages[lastIndex].type === "assistant") {
+          newMessages[lastIndex] = {
+            ...newMessages[lastIndex],
+            content: data.answer || "No response received",
+            sources: data.sources || [],
+            contextUsed: data.context_used || 0,
+          };
+        }
+        return newMessages;
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
-
+  } catch (error) {
+    console.error("Error in handleSendMessage:", error);
+    setMessages((prev) => {
+      const newMessages = [...prev];
+      newMessages.pop();
+      return [
+        ...newMessages,
+        {
+          type: "error",
+          content: `Network Error: ${error.message}`,
+        },
+      ];
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
   const handleCreateWorkspace = async () => {
     try {
       const response = await fetch("http://127.0.0.1:8000/setup_workspace", {
